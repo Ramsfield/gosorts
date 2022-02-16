@@ -40,7 +40,3 @@ func BubbleSort(sinfo *SortInfo) {
     fmt.Printf("Bubble Sort completed in %v over %v iterations\nArray: %v\n", duration, iterations, sinfo.Slice)
   }
 }
-
-func Greet() string {
-  return "Hello"
-}
