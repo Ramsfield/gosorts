@@ -14,13 +14,21 @@ type SortInfo struct {
   Ascending bool `default:true`
 }
 
+func ascendedOrdered(p,q int) bool {
+  return p <= q
+}
+
+func descendedOrdered(p,q int) bool {
+  return p >= q
+}
+
 func BubbleSort(sinfo *SortInfo) {
   defer sinfo.Done()
   defer sinfo.Unlock()
   sinfo.Lock()
-  ordered := func(p,q int) bool { return p <= q }
+  ordered := ascendedOrdered
   if !sinfo.Ascending {
-    ordered = func(p,q int) bool { return p >= q }
+    ordered = descendedOrdered
   }
   sorted := false
   iterations := 0
@@ -37,6 +45,57 @@ func BubbleSort(sinfo *SortInfo) {
   }
   duration := time.Since(start)
   if sinfo.ToPrint {
-    fmt.Printf("Bubble Sort completed in %v over %v iterations\nArray: %v\n", duration, iterations, sinfo.Slice)
+    fmt.Printf("Bubble Sort completed in %v over %v iterations\n", duration, iterations)
+  }
+}
+
+func merge(arr []int, ordered func(int, int) bool) []int {
+  //Base Case: only one (or none, I guess)
+  if len(arr) <= 1 {
+    return arr
+  }
+  firstHalf := merge(arr[:len(arr)/2], ordered)
+  secondHalf := merge(arr[len(arr)/2:], ordered)
+  merged := make([]int, len(arr))
+  idx := 0
+  //Merge
+  for len(firstHalf) > 0 && len(secondHalf) > 0 && idx < len(merged) {
+    if ordered(firstHalf[0], secondHalf[0]) {
+      merged[idx] = firstHalf[0]
+      idx++
+      firstHalf = firstHalf[1:]
+    } else {
+      merged[idx] = secondHalf[0]
+      idx++
+      secondHalf = secondHalf[1:]
+    }
+  }
+  //Ensure no slice left full
+  for len(firstHalf) > 0 && idx < len(merged) {
+    merged[idx] = firstHalf[0]
+    idx++
+    firstHalf = firstHalf[1:]
+  }
+  for len(secondHalf) > 0 && idx < len(merged) {
+    merged[idx] = secondHalf[0]
+    idx++
+    secondHalf = secondHalf[1:]
+  }
+  return merged
+}
+
+func MergeSort(sinfo *SortInfo) {
+  defer sinfo.Done()
+  defer sinfo.Unlock()
+  sinfo.Lock()
+  ordered := ascendedOrdered
+  if !sinfo.Ascending {
+    ordered = descendedOrdered
+  }
+  start := time.Now()
+  sinfo.Slice = merge(sinfo.Slice, ordered)
+  duration := time.Since(start)
+  if sinfo.ToPrint {
+    fmt.Printf("Merge Sort completed in %v\n", duration)
   }
 }
