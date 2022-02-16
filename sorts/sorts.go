@@ -99,3 +99,62 @@ func MergeSort(sinfo *SortInfo) {
     fmt.Printf("Merge Sort completed in %v\n", duration)
   }
 }
+
+func threadMerge(arr []int, ordered func(int,int) bool, ch chan<- []int) {
+  //Base Case -- one (or none)
+  if len(arr) <= 1 {
+    ch <- arr
+    return
+  }
+
+  //Merge halves
+  ch1 := make(chan []int)
+  ch2 := make(chan []int)
+  go threadMerge(arr[:len(arr)/2], ordered, ch1)
+  go threadMerge(arr[len(arr)/2:], ordered, ch2)
+  firstHalf := <-ch1
+  secondHalf := <-ch2
+  merged := make([]int, len(arr))
+  idx := 0
+  for len(firstHalf) > 0 && len(secondHalf) > 0 && idx < len(merged) {
+    if ordered(firstHalf[0], secondHalf[0]) {
+      merged[idx] = firstHalf[0]
+      idx++
+      firstHalf = firstHalf[1:]
+    } else {
+      merged[idx] = secondHalf[0]
+      idx++
+      secondHalf = secondHalf[1:]
+    }
+  }
+  //Ensure no slice left full
+  for len(firstHalf) > 0 && idx < len(merged) {
+    merged[idx] = firstHalf[0]
+    idx++
+    firstHalf = firstHalf[1:]
+  }
+  for len(secondHalf) > 0 && idx < len(merged) {
+    merged[idx] = secondHalf[0]
+    idx++
+    secondHalf = secondHalf[1:]
+  }
+  ch <- merged
+}
+
+func ThreadedMerge(sinfo *SortInfo) {
+  defer sinfo.Done()
+  defer sinfo.Unlock()
+  sinfo.Lock()
+  ordered := ascendedOrdered
+  if !sinfo.Ascending {
+    ordered = descendedOrdered
+  }
+  start := time.Now()
+  channel := make(chan []int)
+  go threadMerge(sinfo.Slice, ordered, channel)
+  sinfo.Slice = <-channel
+  duration := time.Since(start)
+  if sinfo.ToPrint {
+    fmt.Printf("Threaded Merge Sort completed in %v\n", duration)
+  }
+}
