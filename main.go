@@ -22,10 +22,12 @@ func main() {
     }
   }
 
+  /*
   randomize(sinfo.Slice)
   sinfo.Add(1)
   go sorts.BubbleSort(&sinfo)
   sinfo.Wait()
+  */
 
   randomize(sinfo.Slice)
   sinfo.Add(1)
