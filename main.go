@@ -22,26 +22,26 @@ func main() {
     }
   }
 
-  /*
+  ordered := func(p,q int) bool { return sinfo.Slice[p] > sinfo.Slice[q]  }
+  if ascending {
+    ordered = func(p,q int) bool { return sinfo.Slice[p] < sinfo.Slice[q] }
+  }
+
   randomize(sinfo.Slice)
   sinfo.Add(1)
   go sorts.BubbleSort(&sinfo)
   sinfo.Wait()
-  */
+  fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
 
   randomize(sinfo.Slice)
   sinfo.Add(1)
   go sorts.MergeSort(&sinfo)
   sinfo.Wait()
+  fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
 
   randomize(sinfo.Slice)
   sinfo.Add(1)
   go sorts.ThreadedMerge(&sinfo)
   sinfo.Wait()
-
-  ordered := func(p,q int) bool { return sinfo.Slice[p] > sinfo.Slice[q]  }
-  if ascending {
-    ordered = func(p,q int) bool { return sinfo.Slice[p] < sinfo.Slice[q] }
-  }
   fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
 }

@@ -1,28 +1,13 @@
 package sorts
 
 import (
-  "sync"
   "fmt"
   "time"
 )
 
-type SortInfo struct {
-  sync.WaitGroup
-  sync.Mutex
-  Slice []int
-  ToPrint bool `default:false`
-  Ascending bool `default:true`
-}
+// Public
 
-func ascendedOrdered(p,q int) bool {
-  return p <= q
-}
-
-func descendedOrdered(p,q int) bool {
-  return p >= q
-}
-
-func BubbleSort(sinfo *SortInfo) {
+func ThreadedMerge(sinfo *SortInfo) {
   defer sinfo.Done()
   defer sinfo.Unlock()
   sinfo.Lock()
@@ -30,24 +15,33 @@ func BubbleSort(sinfo *SortInfo) {
   if !sinfo.Ascending {
     ordered = descendedOrdered
   }
-  sorted := false
-  iterations := 0
   start := time.Now()
-  for !sorted {
-    sorted = true;
-    iterations++
-    for i := 0; i < len(sinfo.Slice)-1; i++ {
-      if !ordered(sinfo.Slice[i], sinfo.Slice[i+1]) {
-        sinfo.Slice[i], sinfo.Slice[i+1] = sinfo.Slice[i+1], sinfo.Slice[i]
-        sorted = false
-      }
-    }
-  }
+  channel := make(chan []int)
+  go threadMerge(sinfo.Slice, ordered, channel)
+  sinfo.Slice = <-channel
   duration := time.Since(start)
   if sinfo.ToPrint {
-    fmt.Printf("Bubble Sort completed in %v over %v iterations\n", duration, iterations)
+    fmt.Printf("Threaded Merge Sort completed in %v\n", duration)
   }
 }
+
+func MergeSort(sinfo *SortInfo) {
+  defer sinfo.Done()
+  defer sinfo.Unlock()
+  sinfo.Lock()
+  ordered := ascendedOrdered
+  if !sinfo.Ascending {
+    ordered = descendedOrdered
+  }
+  start := time.Now()
+  sinfo.Slice = merge(sinfo.Slice, ordered)
+  duration := time.Since(start)
+  if sinfo.ToPrint {
+    fmt.Printf("Merge Sort completed in %v\n", duration)
+  }
+}
+
+// Private
 
 func merge(arr []int, ordered func(int, int) bool) []int {
   //Base Case: only one (or none, I guess)
@@ -84,21 +78,6 @@ func merge(arr []int, ordered func(int, int) bool) []int {
   return merged
 }
 
-func MergeSort(sinfo *SortInfo) {
-  defer sinfo.Done()
-  defer sinfo.Unlock()
-  sinfo.Lock()
-  ordered := ascendedOrdered
-  if !sinfo.Ascending {
-    ordered = descendedOrdered
-  }
-  start := time.Now()
-  sinfo.Slice = merge(sinfo.Slice, ordered)
-  duration := time.Since(start)
-  if sinfo.ToPrint {
-    fmt.Printf("Merge Sort completed in %v\n", duration)
-  }
-}
 
 func threadMerge(arr []int, ordered func(int,int) bool, ch chan<- []int) {
   //We need to decide how small of an Slice will stop seeing benefits from spinning off new goroutines
@@ -155,20 +134,3 @@ func threadMerge(arr []int, ordered func(int,int) bool, ch chan<- []int) {
   ch <- merged
 }
 
-func ThreadedMerge(sinfo *SortInfo) {
-  defer sinfo.Done()
-  defer sinfo.Unlock()
-  sinfo.Lock()
-  ordered := ascendedOrdered
-  if !sinfo.Ascending {
-    ordered = descendedOrdered
-  }
-  start := time.Now()
-  channel := make(chan []int)
-  go threadMerge(sinfo.Slice, ordered, channel)
-  sinfo.Slice = <-channel
-  duration := time.Since(start)
-  if sinfo.ToPrint {
-    fmt.Printf("Threaded Merge Sort completed in %v\n", duration)
-  }
-}
