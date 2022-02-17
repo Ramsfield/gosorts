@@ -27,11 +27,13 @@ func main() {
     ordered = func(p,q int) bool { return sinfo.Slice[p] < sinfo.Slice[q] }
   }
 
+  /*
   randomize(sinfo.Slice)
   sinfo.Add(1)
   go sorts.BubbleSort(&sinfo)
   sinfo.Wait()
   fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
+  */
 
   randomize(sinfo.Slice)
   sinfo.Add(1)
@@ -42,6 +44,12 @@ func main() {
   randomize(sinfo.Slice)
   sinfo.Add(1)
   go sorts.ThreadedMerge(&sinfo)
+  sinfo.Wait()
+  fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
+
+  randomize(sinfo.Slice)
+  sinfo.Add(1)
+  go sorts.QuickSort(&sinfo)
   sinfo.Wait()
   fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
 }
