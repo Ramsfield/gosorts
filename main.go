@@ -10,9 +10,10 @@ import(
 
 func main() {
   ascending := true
+  arraySize := 100000
   rand.Seed(time.Now().UnixNano())
   sinfo := sorts.SortInfo {
-    Slice: make([]int, 100000),
+    Slice: make([]int, arraySize),
     ToPrint: true,
     Ascending: ascending,
   }
@@ -27,27 +28,29 @@ func main() {
     ordered = func(p,q int) bool { return sinfo.Slice[p] < sinfo.Slice[q] }
   }
 
-  /*
-  randomize(sinfo.Slice)
+  //Create a single randomized array to test all algorithms
+  arr := make([]int, arraySize)
+  randomize(arr)
+
+  copy(sinfo.Slice, arr)
   sinfo.Add(1)
   go sorts.BubbleSort(&sinfo)
   sinfo.Wait()
   fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
-  */
 
-  randomize(sinfo.Slice)
+  copy(sinfo.Slice, arr)
   sinfo.Add(1)
   go sorts.MergeSort(&sinfo)
   sinfo.Wait()
   fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
 
-  randomize(sinfo.Slice)
+  copy(sinfo.Slice, arr)
   sinfo.Add(1)
   go sorts.ThreadedMerge(&sinfo)
   sinfo.Wait()
   fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
 
-  randomize(sinfo.Slice)
+  copy(sinfo.Slice, arr)
   sinfo.Add(1)
   go sorts.QuickSort(&sinfo)
   sinfo.Wait()
