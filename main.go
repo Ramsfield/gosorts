@@ -32,11 +32,13 @@ func main() {
   arr := make([]int, arraySize)
   randomize(arr)
 
+  /*
   copy(sinfo.Slice, arr)
   sinfo.Add(1)
   go sorts.BubbleSort(&sinfo)
   sinfo.Wait()
   fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
+  */
 
   copy(sinfo.Slice, arr)
   sinfo.Add(1)
@@ -53,6 +55,12 @@ func main() {
   copy(sinfo.Slice, arr)
   sinfo.Add(1)
   go sorts.QuickSort(&sinfo)
+  sinfo.Wait()
+  fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
+
+  copy(sinfo.Slice, arr)
+  sinfo.Add(1)
+  go sorts.ThreadedQuickSort(&sinfo)
   sinfo.Wait()
   fmt.Printf("Sorted: %t\n", sort.SliceIsSorted(sinfo.Slice, ordered))
 }
